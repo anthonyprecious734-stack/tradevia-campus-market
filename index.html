@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradeVia - RSU Trusted Marketplace</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body{font-family:Inter,sans-serif;background:#f8fafc}
+.trust-badge{background:linear-gradient(135deg,#0f766e,#14b8a6)}
+</style>
+</head>
+<body>
+<header class="bg-white border-b sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+<div class="flex items-center gap-2 font-black text-xl"><div class="w-8 h-8 bg-teal-600 text-white grid place-items-center rounded-lg">T</div> TradeVia</div>
+<div class="flex gap-2">
+<button onclick="openDash()" class="px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-semibold"><i class="fa-solid fa-user"></i> Dashboard</button>
+<button id="loginBtn" onclick="openLogin()" class="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-sm">Login</button>
+<button onclick="openSell()" class="px-3 py-1.5 bg-black text-white rounded-lg text-sm">+ Sell</button>
+</div>
+</div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+<div class="trust-badge text-white p-3 rounded-xl mb-4 flex justify-between text-sm">
+<div><i class="fa-solid fa-shield-halved"></i> TradeVia Trust: Verified RSU Only • <span id="userStatus">Guest</span> • Score: 87%</div>
+<div class="bg-white text-teal-700 px-2 py-1 rounded font-bold text-xs">VERIFIED ✓</div>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+<select id="catFilter" onchange="render()" class="p-2 border rounded-lg"><option value="all">All</option><option>Electronics</option><option>Fashion</option><option>Books</option><option>Hostel Items</option></select>
+<input id="search" oninput="render()" placeholder="Search TradeVia..." class="p-2 border rounded-lg col-span-1 md:col-span-3">
+</div>
+
+<div id="products" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+</main>
+
+<!-- SELL -->
+<div id="sellModal" class="hidden fixed inset-0 bg-black/50 z-50 grid place-items-center p-4">
+<div class="bg-white w-full max-w-md rounded-2xl p-6">
+<h3 class="font-bold text-lg mb-4">Sell - Trust Listing</h3>
+<input id="pTitle" placeholder="Item Title" class="w-full border p-2 rounded mb-2">
+<select id="pCat" class="w-full border p-2 rounded mb-2"><option>Electronics</option><option>Fashion</option><option>Books</option><option>Hostel Items</option></select>
+<input id="pPrice" type="number" placeholder="Price ₦" class="w-full border p-2 rounded mb-2">
+<input id="pLoc" placeholder="Location" class="w-full border p-2 rounded mb-2">
+<textarea id="pDesc" placeholder="Description" class="w-full border p-2 rounded mb-3"></textarea>
+<div class="flex gap-2"><button onclick="closeSell()" class="flex-1 bg-gray-100 py-2 rounded">Cancel</button><button onclick="addProduct()" class="flex-1 bg-teal-600 text-white py-2 rounded font-bold">Post + Trust Badge</button></div>
+</div>
+</div>
+
+<!-- PRODUCT VIEW -->
+<div id="prodModal" class="hidden fixed inset-0 bg-black/50 z-50 overflow-y-auto p-4">
+<div class="bg-white max-w-2xl mx-auto rounded-2xl p-6">
+<button onclick="closeProd()" class="float-right"><i class="fa-solid fa-xmark"></i></button>
+<h2 id="mTitle" class="text-2xl font-black"></h2>
+<p id="mMeta" class="text-sm text-gray-500 mb-3"></p>
+<div class="trust-badge text-white p-2 rounded-lg text-xs mb-3"><i class="fa-solid fa-certificate"></i> Verified Seller • Trust 87% • RSU Student</div>
+<p id="mDesc" class="mb-4"></p>
+<div class="grid grid-cols-2 gap-2 mb-4">
+<button onclick="openApply()" class="bg-teal-600 text-white py-3 rounded-xl font-bold"><i class="fa-solid fa-paper-plane"></i> Apply (In-App)</button>
+<button onclick="openChat()" class="bg-black text-white py-3 rounded-xl font-bold"><i class="fa-solid fa-comment"></i> Chat Seller</button>
+</div>
+<div class="border-t pt-4">
+<h4 class="font-bold mb-2">Reviews & Comments</h4>
+<div id="reviewList" class="space-y-2 mb-3"></div>
+<div class="flex gap-2"><select id="rStar" class="border p-2 rounded"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select><input id="rText" placeholder="Add review..." class="flex-1 border p-2 rounded"><button onclick="addReview()" class="bg-teal-600 text-white px-4 rounded">Post</button></div>
+</div>
+</div>
+</div>
+
+<!-- APPLY -->
+<div id="applyModal" class="hidden fixed inset-0 bg-black/50 z-50 grid place-items-center p-4">
+<div class="bg-white w-full max-w-sm rounded-2xl p-6">
+<h3 class="font-bold mb-3">In-App Application</h3>
+<input id="aName" placeholder="Your Name" class="w-full border p-2 rounded mb-2">
+<input id="aDept" placeholder="Dept/Level" class="w-full border p-2 rounded mb-2">
+<textarea id="aMsg" placeholder="Message to seller" class="w-full border p-2 rounded mb-2"></textarea>
+<div class="flex gap-2"><button onclick="closeApply()" class="flex-1 bg-gray-100 py-2 rounded">Cancel</button><button onclick="submitApply()" class="flex-1 bg-teal-600 text-white py-2 rounded">Send</button></div>
+</div>
+</div>
+
+<!-- CHAT -->
+<div id="chatModal" class="hidden fixed inset-0 bg-black/50 z-50 grid place-items-center p-4">
+<div class="bg-white w-full max-w-sm rounded-2xl overflow-hidden flex flex-col h-[400px]">
+<div class="p-3 bg-black text-white flex justify-between"><b>In-App Chat</b><button onclick="closeChat()"><i class="fa-solid fa-xmark"></i></button></div>
+<div id="chatBox" class="flex-1 p-3 overflow-y-auto space-y-2 text-sm bg-gray-50"></div>
+<div class="p-2 flex gap-2 border-t"><input id="chatInput" placeholder="Type..." class="flex-1 border p-2 rounded"><button onclick="sendChat()" class="bg-teal-600 text-white px-4 rounded">Send</button></div>
+</div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginModal" class="hidden fixed inset-0 bg-black/50 z-50 grid place-items-center p-4">
+<div class="bg-white w-full max-w-sm rounded-2xl p-6">
+<h3 class="font-bold mb-2">Login - RSU Verify</h3>
+<input id="lEmail" placeholder="you@rsu.edu.ng" class="w-full border p-2 rounded mb-3">
+<div class="flex gap-2"><button onclick="closeLogin()" class="flex-1 bg-gray-100 py-2 rounded">Cancel</button><button onclick="doLogin()" class="flex-1 bg-teal-600 text-white py-2 rounded font-bold">Login</button></div>
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashModal" class="hidden fixed inset-0 bg-black/50 z-50 overflow-y-auto p-4">
+<div class="bg-white max-w-3xl mx-auto rounded-2xl p-6">
+<div class="flex justify-between mb-4"><h2 class="font-black text-xl">My Dashboard</h2><button onclick="closeDash()"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="trust-badge text-white p-3 rounded-xl mb-4"><div class="flex justify-between text-sm"><span>Trust Score: <b>87%</b></span><span>Verified ✓</span></div><div class="w-full bg-white/30 h-2 rounded mt-2"><div class="bg-white h-2 w-[87%] rounded"></div></div></div>
+<div class="grid md:grid-cols-2 gap-4">
+<div><h4 class="font-bold mb-2">My Listings</h4><div id="myListings" class="space-y-2"></div></div>
+<div><h4 class="font-bold mb-2">Applications (In-App)</h4><div id="myApps" class="space-y-2"></div></div>
+</div>
+<button onclick="doLogout()" class="mt-6 w-full bg-red-50 text-red-600 py-2 rounded font-bold">Logout</button>
+</div>
+</div>
+
+<script>
+let products = JSON.parse(localStorage.getItem('tv_p')||'[]');
+let reviews = JSON.parse(localStorage.getItem('tv_r')||'{}');
+let chats = JSON.parse(localStorage.getItem('tv_c')||'{}');
+let apps = JSON.parse(localStorage.getItem('tv_a')||'[]');
+let user = localStorage.getItem('tv_u')||'';
+let currentProd = null;
+if(products.length==0){
+products = [{ id:'1', title:'iPhone 13 128GB', category:'Electronics', price:350000, location:'Hostel C', description:'Clean iPhone, verified seller', user_email:'test@rsu.edu.ng' },{ id:'2', title:'Ankara Gown', category:'Fashion', price:12000, location:'Main Campus', description:'New Ankara', user_email:'sarah@rsu.edu.ng' }];
+}
+function save(){ localStorage.setItem('tv_p',JSON.stringify(products)); localStorage.setItem('tv_r',JSON.stringify(reviews)); localStorage.setItem('tv_c',JSON.stringify(chats)); localStorage.setItem('tv_a',JSON.stringify(apps)); }
+function updateUI(){ document.getElementById('userStatus').innerText=user||'Guest'; document.getElementById('loginBtn').innerText=user?user.split('@')[0]:'Login'; }
+updateUI();
+function render(){
+const q=document.getElementById('search').value.toLowerCase();
+const cat=document.getElementById('catFilter').value;
+let list=products.filter(p=>(cat=='all'||p.category==cat) && (p.title.toLowerCase().includes(q)||p.description.toLowerCase().includes(q)));
+document.getElementById('products').innerHTML=list.map(p=>`<div class="bg-white border rounded-2xl p-4"><div class="flex justify-between mb-2"><span class="text-[10px] bg-teal-100 text-teal-700 px-2 py-1 rounded-full font-bold"><i class="fa-solid fa-shield"></i> TRUST VERIFIED</span><span class="text-xs bg-gray-100 px-2 py-1 rounded">${p.category}</span></div><h3 class="font-bold">${p.title}</h3><p class="text-xs text-gray-500">${p.location} • ${p.user_email}</p><p class="text-sm text-gray-600 mt-2">${p.description}</p><div class="flex justify-between items-center mt-3"><b class="text-teal-700">₦${Number(p.price).toLocaleString()}</b><button onclick="viewProd('${p.id}')" class="bg-black text-white text-xs px-3 py-1.5 rounded-lg">View & Apply</button></div></div>`).join('')||'<p class="col-span-3 text-center text-gray-400 py-10">No items. Be first to sell!</p>';
+}
+function viewProd(id){ currentProd=products.find(x=>x.id==id); document.getElementById('mTitle').innerText=currentProd.title; document.getElementById('mMeta').innerText=`₦${Number(currentProd.price).toLocaleString()} • ${currentProd.category} • ${currentProd.location}`; document.getElementById('mDesc').innerText=currentProd.description; renderReviews(); document.getElementById('prodModal').classList.remove('hidden'); }
+function closeProd(){ document.getElementById('prodModal').classList.add('hidden'); }
+function openSell(){ if(!user){ openLogin(); return; } document.getElementById('sellModal').classList.remove('hidden'); }
+function closeSell(){ document.getElementById('sellModal').classList.add('hidden'); }
+function addProduct(){
+const t=document.getElementById('pTitle').value,c=document.getElementById('pCat').value,pr=document.getElementById('pPrice').value,loc=document.getElementById('pLoc').value,d=document.getElementById('pDesc').value;
+if(!t||!pr){ alert('Add title and price'); return; }
+products.unshift({ id:Date.now().toString(), title:t, category:c, price:pr, location:loc, description:d, user_email:user }); save(); render(); closeSell(); alert('Posted with Trust Badge!');
+}
+function renderReviews(){ const list=reviews[currentProd.id]||[]; document.getElementById('reviewList').innerHTML=list.map(r=>`<div class="bg-gray-50 p-2 rounded text-sm"><b>${'★'.repeat(r.star)}</b> ${r.text} <span class="text-[10px] text-gray-400">- ${r.user}</span></div>`).join('')||'<p class="text-xs text-gray-400">No reviews yet.</p>'; }
+function addReview(){ if(!user){ openLogin(); return; } const star=document.getElementById('rStar').value,txt=document.getElementById('rText').value; if(!txt) return; if(!reviews[currentProd.id]) reviews[currentProd.id]=[]; reviews[currentProd.id].push({ star, text:txt, user:user }); document.getElementById('rText').value=''; save(); renderReviews(); }
+function openApply(){ if(!user){ openLogin(); return; } document.getElementById('applyModal').classList.remove('hidden'); }
+function closeApply(){ document.getElementById('applyModal').classList.add('hidden'); }
+function submitApply(){ const n=document.getElementById('aName').value,dept=document.getElementById('aDept').value,msg=document.getElementById('aMsg').value; apps.push({ prodId:currentProd.id, prodTitle:currentProd.title, buyer:user, name:n, dept, msg, seller:currentProd.user_email, date:new Date().toLocaleString() }); save(); closeApply(); alert('Application Sent In-App!'); }
+function openChat(){ if(!user){ openLogin(); return; } document.getElementById('chatModal').classList.remove('hidden'); renderChat(); }
+function closeChat(){ document.getElementById('chatModal').classList.add('hidden'); }
+function renderChat(){ const key=currentProd.id; const list=chats[key]||[]; document.getElementById('chatBox').innerHTML=list.map(m=>`<div class="${m.from==user?'bg-teal-600 text-white ml-6':'bg-white mr-6 border'} p-2 rounded-xl"><b class="text-[10px] block">${m.from}</b>${m.text}</div>`).join('')||'<p class="text-xs text-gray-400 text-center">Start chat — In-App (no WhatsApp)</p>'; }
+function sendChat(){ const txt=document.getElementById('chatInput').value; if(!txt) return; if(!chats[currentProd.id]) chats[currentProd.id]=[]; chats[currentProd.id].push({ from:user, text:txt }); document.getElementById('chatInput').value=''; save(); renderChat(); }
+function openLogin(){ document.getElementById('loginModal').classList.remove('hidden'); }
+function closeLogin(){ document.getElementById('loginModal').classList.add('hidden'); }
+function doLogin(){ const e=document.getElementById('lEmail').value; if(!e.includes('@')){ alert('Enter email'); return; } user=e; localStorage.setItem('tv_u',e); updateUI(); closeLogin(); alert('Verified! Trust Active.'); }
+function doLogout(){ localStorage.removeItem('tv_u'); user=''; updateUI(); closeDash(); render(); }
+function openDash(){ if(!user){ openLogin(); return; } const myP=products.filter(p=>p.user_email==user); document.getElementById('myListings').innerHTML=myP.map(p=>`<div class="border p-2 rounded flex justify-between text-sm"><span>${p.title}</span><button onclick="deleteProd('${p.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div>`).join('')||'<p class="text-xs text-gray-400">No listings</p>'; const myA=apps.filter(a=>a.seller==user); document.getElementById('myApps').innerHTML=myA.map(a=>`<div class="border p-2 rounded text-xs"><b>${a.prodTitle}</b><br>From: ${a.buyer} (${a.name})<br>Msg: ${a.msg}</div>`).join('')||'<p class="text-xs text-gray-400">No apps</p>'; document.getElementById('dashModal').classList.remove('hidden'); }
+function closeDash(){ document.getElementById('dashModal').classList.add('hidden'); }
+function deleteProd(id){ products=products.filter(p=>p.id!=id); save(); openDash(); render(); }
+render();
+</script>
+</body>
+</html>
